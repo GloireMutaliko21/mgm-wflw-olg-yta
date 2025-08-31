@@ -1,0 +1,37 @@
+name: Daily Commit
+
+on:
+  schedule:
+    - cron: '15 8 * * *'     # 6:15 UTC (8:15 CET)
+    - cron: '30 13 * * 1-6'     # 13:30 UTC (15:30 CET)
+    - cron: '55 17 * * 1-5'     # 17:55 UTC (19:55 CET)
+  workflow_dispatch:
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Make a daily change
+        run: |
+          echo "Ping at: $(date -u)" >> activity.log
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "GloireMutaliko21" 
+          git config --global user.email "mufunyig@gmail.com"
+
+      - name: Commit and push
+        run: |
+          git add activity.log
+          git commit -m "🔁 Auto ping at $(date -u)" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin main
